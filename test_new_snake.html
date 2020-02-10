@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<style type="text/css">
+			body {
+			 display: flex;
+			 height: 100vh;
+			 margin: 0;
+			 padding: 0;
+			 justify-content: center;
+			 align-items: center;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="can" style="background-color:black;"></canvas>
+	</body>
+	<script type="text/javascript">
+		var canvas=document.getElementById('can');
+		var ctx=canvas.getContext('2d');
+		var food={"x":-1,"y":-1};
+		var snakeArray=[];
+		canvas.width=400;
+		canvas.height=400;
+		var d=39;
+	    var gameWidth=canvas.width;
+	    var gameHeight=canvas.height;
+		//初始化函数
+		function init(){
+			initSnake(3);
+			initFood();
+			play();
+		}
+		init();
+		
+		//初始化蛇数组,注意蛇头为第一个数组元素
+		function initSnake(length){
+			for(var i=length;i>0;--i){
+				snakeArray.push({"x":i,"y":1});
+			}
+		}
+		
+		//初始化食物,如果食物的坐标与蛇身重合,则重新取
+		function initFood(){
+			food.x=Math.floor(gameWidth/20*Math.random());
+			food.y=Math.floor(gameHeight/20*Math.random());
+			for(var i=0;i<snakeArray.length;++i){
+				if(food.x==snakeArray[i].x&&food.y==snakeArray[i].y){
+					initFood();
+				}
+			}
+		}
+		
+		var time=setInterval(play,200);
+		//蛇要开始动
+		function play(){
+			ctx.fillStyle="black";
+			ctx.fillRect(0,0,gameWidth,gameHeight);
+			moveSnake();
+			paintSnake();
+			paintCell();
+			if(snakeArray[0].x==food.x&&snakeArray[0].y==food.y){
+				initFood();
+				snakeArray.push({"x":food.x,"y":food.y});
+			}
+			for(var i=1;i<snakeArray.length;++i){
+				if(snakeArray[0].x==snakeArray[i].x&&snakeArray[0].y==snakeArray[i].y){
+					alert('GameOver!');
+					clearInterval(time);
+					return;
+				}
+			}
+		}
+		
+		document.onkeydown=function(e){
+			//写两个条件是因为不能在蛇刚开始摁做的时候再摁右,这样蛇头会有问题
+			if(e.keyCode==38&&d!=40){
+				d=38;
+			}
+			else if(e.keyCode==40&&d!=38){
+				d=40;
+			}
+			else if(e.keyCode==37&&d!=39){
+				d=37;
+			}
+			else if(e.keyCode==39&&d!=37){
+				d=39;
+			}
+		}
+		function moveSnake(){
+			var p={"x":snakeArray[0].x,"y":snakeArray[0].y};
+			if(d==38){
+				p["y"]--;
+			};
+			if(d==40){
+				p["y"]++;
+			};
+			if(d==37){
+				p["x"]--;
+			};
+			if(d==39){
+				p["x"]++;
+			};
+			//将if语句放在这里是为了在触碰墙壁之后蛇身长度不会再减一
+			if(p.x==-1||p.y==-1||p.x==gameWidth/20||p.y==gameHeight/20){
+				clearInterval(time);
+				alert('GameOver!');
+				return;
+			}
+			snakeArray.pop();
+			snakeArray.unshift(p);
+		}
+		function paintSnake(){
+			ctx.fillStyle="white";
+			ctx.fillRect(snakeArray[0].x*20,snakeArray[0].y*20,19,19);
+			ctx.fillStyle="blue";
+			for(var i=1;i<snakeArray.length;++i){
+				ctx.fillRect(snakeArray[i].x*20,snakeArray[i].y*20,19,19);
+			}
+		}
+		function paintCell(){
+			ctx.fillStyle="red";
+			ctx.fillRect(food.x*20,food.y*20,19,19);
+		}
+	</script>
+</html>
